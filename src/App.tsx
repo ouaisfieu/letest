@@ -13,6 +13,8 @@ import { ProfilePage } from './components/pages/ProfilePage';
 import { CommunityPage } from './components/pages/CommunityPage';
 import { CertificationsPage } from './components/pages/CertificationsPage';
 import { SettingsPage } from './components/pages/SettingsPage';
+import { GamesPage } from './components/pages/GamesPage';
+import { GamePlayPage } from './components/pages/GamePlayPage';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 
@@ -32,6 +34,8 @@ const PAGE_TITLES: Record<Page, string> = {
   topic: 'Discussion',
   certifications: 'Certifications',
   settings: 'Parametres',
+  games: 'Jeux Educatifs',
+  'game-play': 'En jeu',
 };
 
 function AppContent() {
@@ -151,6 +155,19 @@ function AppContent() {
         return <CertificationsPage />;
       case 'settings':
         return <SettingsPage />;
+      case 'games':
+        return (
+          <GamesPage
+            onSelectCollection={(collectionId) => navigate('game-play', { collectionId })}
+          />
+        );
+      case 'game-play':
+        return nav.collectionId ? (
+          <GamePlayPage
+            collectionId={nav.collectionId}
+            onBack={() => navigate('games')}
+          />
+        ) : null;
       default:
         return (
           <DashboardPage

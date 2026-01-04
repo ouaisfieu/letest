@@ -323,7 +323,9 @@ export type Page =
   | 'community'
   | 'topic'
   | 'certifications'
-  | 'settings';
+  | 'settings'
+  | 'games'
+  | 'game-play';
 
 export interface NavigationState {
   page: Page;
@@ -331,4 +333,161 @@ export interface NavigationState {
   moduleId?: string;
   lessonId?: string;
   topicId?: string;
+  collectionId?: string;
+}
+
+export interface GameType {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  min_players: number;
+  max_players: number;
+  avg_duration_minutes: number;
+  is_active: boolean;
+}
+
+export interface GameCollection {
+  id: string;
+  game_type_id: string;
+  module_id?: string;
+  slug: string;
+  title: string;
+  description: string;
+  cover_image_url?: string;
+  difficulty_level: number;
+  estimated_minutes: number;
+  xp_reward: number;
+  order_index: number;
+  is_published: boolean;
+  created_at: string;
+  game_type?: GameType;
+  cards_count?: number;
+}
+
+export interface FlashcardFrontContent {
+  type: 'question';
+  text: string;
+  media?: string;
+  formatting?: string;
+}
+
+export interface FlashcardBackContent {
+  type: 'answer';
+  text: string;
+  explanation?: string;
+  sources?: string[];
+}
+
+export interface MCQFrontContent {
+  type: 'question';
+  text: string;
+  options: string[];
+  correct_indices: number[];
+  shuffle_options?: boolean;
+}
+
+export interface MCQBackContent {
+  type: 'explanation';
+  text: string;
+  learn_more_url?: string;
+}
+
+export interface MatchingFrontContent {
+  type: 'pairs';
+  instruction: string;
+  left_items: { id: string; text: string }[];
+  right_items: { id: string; text: string }[];
+  correct_pairs: Record<string, string>;
+}
+
+export interface GameCard {
+  id: string;
+  collection_id: string;
+  card_type: 'flashcard' | 'mcq' | 'matching' | 'scenario';
+  front_content: FlashcardFrontContent | MCQFrontContent | MatchingFrontContent;
+  back_content: FlashcardBackContent | MCQBackContent | { type: string; text: string };
+  hints: string[];
+  tags: string[];
+  difficulty: number;
+  points: number;
+  order_index: number;
+  is_active: boolean;
+}
+
+export interface GameSession {
+  id: string;
+  user_id: string;
+  collection_id: string;
+  game_mode: 'practice' | 'timed' | 'challenge';
+  started_at: string;
+  completed_at?: string;
+  score: number;
+  max_score: number;
+  cards_seen: number;
+  cards_correct: number;
+  time_spent_seconds: number;
+  streak_count: number;
+  session_data: Record<string, unknown>;
+}
+
+export interface CardResponse {
+  id: string;
+  session_id: string;
+  card_id: string;
+  user_answer: unknown;
+  is_correct: boolean;
+  response_time_ms: number;
+  attempts: number;
+  hint_used: boolean;
+  answered_at: string;
+}
+
+export interface CardMastery {
+  id: string;
+  user_id: string;
+  card_id: string;
+  ease_factor: number;
+  interval_days: number;
+  repetitions: number;
+  next_review_date: string;
+  last_reviewed_at?: string;
+  mastery_level: number;
+  total_reviews: number;
+  correct_reviews: number;
+}
+
+export interface WellnessSettings {
+  id: string;
+  user_id: string;
+  daily_goal_minutes: number;
+  session_limit_minutes: number;
+  break_reminders_enabled: boolean;
+  break_intensity: 'gentle' | 'medium' | 'strict';
+  blink_reminders_enabled: boolean;
+  night_mode_enabled: boolean;
+  night_mode_start: string;
+  night_mode_end: string;
+  weekly_report_enabled: boolean;
+}
+
+export interface WellnessBreak {
+  id: string;
+  user_id: string;
+  break_type: 'micro' | 'medium' | 'long' | 'blink';
+  duration_seconds: number;
+  completed: boolean;
+  xp_earned: number;
+  taken_at: string;
+}
+
+export interface GameSessionState {
+  currentCardIndex: number;
+  cards: GameCard[];
+  answers: Map<string, { answer: unknown; correct: boolean; time: number }>;
+  score: number;
+  streak: number;
+  startTime: number;
+  isPaused: boolean;
 }
