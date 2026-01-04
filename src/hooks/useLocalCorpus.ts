@@ -24,6 +24,36 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
+function parseCSVLine(line: string, delimiter: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = line[i + 1];
+
+    if (char === '"' && !inQuotes) {
+      inQuotes = true;
+    } else if (char === '"' && inQuotes) {
+      if (nextChar === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = false;
+      }
+    } else if (char === delimiter && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+
+  return result.map(v => v.replace(/^["']|["']$/g, ''));
+}
+
 function loadFromStorage(): CorpusItem[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -133,6 +163,149 @@ export function useLocalCorpus() {
     }
   }, []);
 
+  const parseCSV = useCallback((content: string): CorpusItem[] => {
+    const lines = content.split('\n').filter(line => line.trim());
+    if (lines.length === 0) return [];
+
+    const delimiter = lines[0].includes(';') ? ';' : ',';
+    const headers = lines[0].split(delimiter).map(h => h.trim().toLowerCase().replace(/^["']|["']$/g, ''));
+
+    const titleIdx = headers.findIndex(h => ['title', 'titre', 'question', 'term', 'front'].includes(h));
+    const contentIdx = headers.findIndex(h => ['content', 'contenu', 'answer', 'reponse', 'definition', 'back', 'response'].includes(h));
+    const typeIdx = headers.findIndex(h => ['type', 'categorie', 'category'].includes(h));
+    const tagsIdx = headers.findIndex(h => ['tags', 'tag', 'labels', 'keywords'].includes(h));
+
+    const now = new Date().toISOString();
+    const items: CorpusItem[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseCSVLine(lines[i], delimiter);
+      if (values.length < 2) continue;
+
+      const title = titleIdx >= 0 ? values[titleIdx]?.trim() : values[0]?.trim();
+      const content = contentIdx >= 0 ? values[contentIdx]?.trim() : values[1]?.trim();
+
+      if (!title || !content) continue;
+
+      let type: CorpusItem['type'] = 'note';
+      if (typeIdx >= 0 && values[typeIdx]) {
+        const typeVal = values[typeIdx].toLowerCase().trim();
+        if (['flashcard', 'note', 'document', 'link', 'custom'].includes(typeVal)) {
+          type = typeVal as CorpusItem['type'];
+        } else if (['question', 'qa', 'term', 'front'].includes(typeVal)) {
+          type = 'flashcard';
+        }
+      } else if (headers.some(h => ['question', 'term', 'front'].includes(h))) {
+        type = 'flashcard';
+      }
+
+      let tags: string[] = [];
+      if (tagsIdx >= 0 && values[tagsIdx]) {
+        tags = values[tagsIdx].split(/[,|]/).map(t => t.trim()).filter(Boolean);
+      }
+
+      items.push({
+        id: generateId(),
+        type,
+        title,
+        content,
+        tags,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    return items;
+  }, []);
+
+  const parseMarkdown = useCallback((content: string, filename: string): CorpusItem[] => {
+    const now = new Date().toISOString();
+    const items: CorpusItem[] = [];
+
+    const sections = content.split(/^#{1,3}\s+/m).filter(s => s.trim());
+
+    if (sections.length <= 1) {
+      const title = filename.replace(/\.(md|txt)$/i, '').replace(/[-_]/g, ' ');
+      items.push({
+        id: generateId(),
+        type: 'document',
+        title,
+        content: content.trim(),
+        tags: [],
+        createdAt: now,
+        updatedAt: now,
+      });
+    } else {
+      for (const section of sections) {
+        const lines = section.split('\n');
+        const title = lines[0]?.trim();
+        const body = lines.slice(1).join('\n').trim();
+
+        if (title && body) {
+          items.push({
+            id: generateId(),
+            type: 'note',
+            title,
+            content: body,
+            tags: [],
+            createdAt: now,
+            updatedAt: now,
+          });
+        }
+      }
+    }
+
+    return items;
+  }, []);
+
+  const parsePlainText = useCallback((content: string, filename: string): CorpusItem[] => {
+    const now = new Date().toISOString();
+    const title = filename.replace(/\.(txt|md)$/i, '').replace(/[-_]/g, ' ');
+
+    return [{
+      id: generateId(),
+      type: 'document',
+      title,
+      content: content.trim(),
+      tags: [],
+      createdAt: now,
+      updatedAt: now,
+    }];
+  }, []);
+
+  const importFromFile = useCallback((content: string, filename: string, mode: 'replace' | 'merge' = 'merge'): { success: boolean; count: number; error?: string } => {
+    try {
+      const ext = filename.split('.').pop()?.toLowerCase() || '';
+      let newItems: CorpusItem[] = [];
+
+      if (ext === 'json') {
+        return importCorpus(content, mode);
+      } else if (ext === 'csv') {
+        newItems = parseCSV(content);
+      } else if (ext === 'md') {
+        newItems = parseMarkdown(content, filename);
+      } else if (ext === 'txt') {
+        newItems = parsePlainText(content, filename);
+      } else {
+        newItems = parsePlainText(content, filename);
+      }
+
+      if (newItems.length === 0) {
+        return { success: false, count: 0, error: 'Aucun element trouve dans le fichier' };
+      }
+
+      if (mode === 'replace') {
+        setItems(newItems);
+      } else {
+        setItems(prev => [...prev, ...newItems]);
+      }
+
+      return { success: true, count: newItems.length };
+    } catch (e) {
+      return { success: false, count: 0, error: 'Erreur de lecture du fichier' };
+    }
+  }, [importCorpus, parseCSV, parseMarkdown, parsePlainText]);
+
   const downloadExport = useCallback((): void => {
     const content = exportCorpus();
     const blob = new Blob([content], { type: 'application/json' });
@@ -156,6 +329,7 @@ export function useLocalCorpus() {
     search,
     exportCorpus,
     importCorpus,
+    importFromFile,
     downloadExport,
     count: items.length,
   };

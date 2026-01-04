@@ -96,7 +96,7 @@ export function CorpusManager() {
     const reader = new FileReader();
     reader.onload = (event) => {
       const content = event.target?.result as string;
-      const result = corpus.importCorpus(content, 'merge');
+      const result = corpus.importFromFile(content, file.name, 'merge');
       if (result.success) {
         setImportStatus({ type: 'success', message: `${result.count} element(s) importe(s)` });
       } else {
@@ -138,7 +138,7 @@ export function CorpusManager() {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".json"
+            accept=".json,.csv,.txt,.md"
             onChange={handleImport}
             className="hidden"
           />
