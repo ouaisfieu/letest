@@ -138,7 +138,7 @@ export function CorpusManager() {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".json,.csv,.txt,.md"
+            accept=".json,.csv,.txt,.md,.xlsx,.xls"
             onChange={handleImport}
             className="hidden"
           />

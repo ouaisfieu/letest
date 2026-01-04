@@ -163,17 +163,39 @@ export function useLocalCorpus() {
     }
   }, []);
 
-  const parseCSV = useCallback((content: string): CorpusItem[] => {
+  const detectTypeFromFilename = useCallback((filename: string): CorpusItem['type'] | null => {
+    const lowerName = filename.toLowerCase();
+    if (lowerName.includes('flashcard') || lowerName.includes('carte') || lowerName.includes('cards')) {
+      return 'flashcard';
+    }
+    if (lowerName.includes('note') || lowerName.includes('memo')) {
+      return 'note';
+    }
+    if (lowerName.includes('doc') || lowerName.includes('article') || lowerName.includes('rapport')) {
+      return 'document';
+    }
+    if (lowerName.includes('link') || lowerName.includes('lien') || lowerName.includes('url')) {
+      return 'link';
+    }
+    return null;
+  }, []);
+
+  const parseCSV = useCallback((content: string, filename: string = ''): CorpusItem[] => {
     const lines = content.split('\n').filter(line => line.trim());
     if (lines.length === 0) return [];
 
     const delimiter = lines[0].includes(';') ? ';' : ',';
     const headers = lines[0].split(delimiter).map(h => h.trim().toLowerCase().replace(/^["']|["']$/g, ''));
 
-    const titleIdx = headers.findIndex(h => ['title', 'titre', 'question', 'term', 'front'].includes(h));
-    const contentIdx = headers.findIndex(h => ['content', 'contenu', 'answer', 'reponse', 'definition', 'back', 'response'].includes(h));
+    const titleIdx = headers.findIndex(h => ['title', 'titre', 'question', 'term', 'front', 'recto'].includes(h));
+    const contentIdx = headers.findIndex(h => ['content', 'contenu', 'answer', 'reponse', 'definition', 'back', 'response', 'verso'].includes(h));
     const typeIdx = headers.findIndex(h => ['type', 'categorie', 'category'].includes(h));
-    const tagsIdx = headers.findIndex(h => ['tags', 'tag', 'labels', 'keywords'].includes(h));
+    const tagsIdx = headers.findIndex(h => ['tags', 'tag', 'labels', 'keywords', 'theme', 'themes'].includes(h));
+
+    const flashcardHeaders = ['question', 'term', 'front', 'recto', 'answer', 'reponse', 'back', 'verso', 'definition'];
+    const hasFlashcardHeaders = headers.some(h => flashcardHeaders.includes(h));
+    const filenameType = detectTypeFromFilename(filename);
+    const defaultType: CorpusItem['type'] = filenameType || (hasFlashcardHeaders ? 'flashcard' : 'note');
 
     const now = new Date().toISOString();
     const items: CorpusItem[] = [];
@@ -183,20 +205,18 @@ export function useLocalCorpus() {
       if (values.length < 2) continue;
 
       const title = titleIdx >= 0 ? values[titleIdx]?.trim() : values[0]?.trim();
-      const content = contentIdx >= 0 ? values[contentIdx]?.trim() : values[1]?.trim();
+      const contentValue = contentIdx >= 0 ? values[contentIdx]?.trim() : values[1]?.trim();
 
-      if (!title || !content) continue;
+      if (!title || !contentValue) continue;
 
-      let type: CorpusItem['type'] = 'note';
+      let type: CorpusItem['type'] = defaultType;
       if (typeIdx >= 0 && values[typeIdx]) {
         const typeVal = values[typeIdx].toLowerCase().trim();
         if (['flashcard', 'note', 'document', 'link', 'custom'].includes(typeVal)) {
           type = typeVal as CorpusItem['type'];
-        } else if (['question', 'qa', 'term', 'front'].includes(typeVal)) {
+        } else if (['question', 'qa', 'term', 'front', 'carte'].includes(typeVal)) {
           type = 'flashcard';
         }
-      } else if (headers.some(h => ['question', 'term', 'front'].includes(h))) {
-        type = 'flashcard';
       }
 
       let tags: string[] = [];
@@ -208,7 +228,7 @@ export function useLocalCorpus() {
         id: generateId(),
         type,
         title,
-        content,
+        content: contentValue,
         tags,
         createdAt: now,
         updatedAt: now,
@@ -216,11 +236,12 @@ export function useLocalCorpus() {
     }
 
     return items;
-  }, []);
+  }, [detectTypeFromFilename]);
 
   const parseMarkdown = useCallback((content: string, filename: string): CorpusItem[] => {
     const now = new Date().toISOString();
     const items: CorpusItem[] = [];
+    const filenameType = detectTypeFromFilename(filename);
 
     const sections = content.split(/^#{1,3}\s+/m).filter(s => s.trim());
 
@@ -228,7 +249,7 @@ export function useLocalCorpus() {
       const title = filename.replace(/\.(md|txt)$/i, '').replace(/[-_]/g, ' ');
       items.push({
         id: generateId(),
-        type: 'document',
+        type: filenameType || 'document',
         title,
         content: content.trim(),
         tags: [],
@@ -244,7 +265,7 @@ export function useLocalCorpus() {
         if (title && body) {
           items.push({
             id: generateId(),
-            type: 'note',
+            type: filenameType || 'note',
             title,
             content: body,
             tags: [],
@@ -256,7 +277,7 @@ export function useLocalCorpus() {
     }
 
     return items;
-  }, []);
+  }, [detectTypeFromFilename]);
 
   const parsePlainText = useCallback((content: string, filename: string): CorpusItem[] => {
     const now = new Date().toISOString();
@@ -280,12 +301,17 @@ export function useLocalCorpus() {
 
       if (ext === 'json') {
         return importCorpus(content, mode);
-      } else if (ext === 'csv') {
-        newItems = parseCSV(content);
+      } else if (ext === 'csv' || ext === 'xlsx' || ext === 'xls') {
+        newItems = parseCSV(content, filename);
       } else if (ext === 'md') {
         newItems = parseMarkdown(content, filename);
       } else if (ext === 'txt') {
-        newItems = parsePlainText(content, filename);
+        const filenameType = detectTypeFromFilename(filename);
+        if (filenameType) {
+          newItems = parsePlainText(content, filename).map(item => ({ ...item, type: filenameType }));
+        } else {
+          newItems = parsePlainText(content, filename);
+        }
       } else {
         newItems = parsePlainText(content, filename);
       }
@@ -304,7 +330,7 @@ export function useLocalCorpus() {
     } catch (e) {
       return { success: false, count: 0, error: 'Erreur de lecture du fichier' };
     }
-  }, [importCorpus, parseCSV, parseMarkdown, parsePlainText]);
+  }, [importCorpus, parseCSV, parseMarkdown, parsePlainText, detectTypeFromFilename]);
 
   const downloadExport = useCallback((): void => {
     const content = exportCorpus();

@@ -261,26 +261,32 @@ export function ProfilePage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Association</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                    Organisation <span className="text-slate-500 font-normal">(optionnel)</span>
+                  </label>
                   <div className="relative">
                     <Building2 size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
                       value={formData.association_name}
                       onChange={(e) => setFormData({ ...formData, association_name: e.target.value })}
-                      className="w-full bg-slate-700/50 border border-slate-600 rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500"
+                      placeholder="Entreprise, association, independant..."
+                      className="w-full bg-slate-700/50 border border-slate-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Role</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                    Fonction <span className="text-slate-500 font-normal">(optionnel)</span>
+                  </label>
                   <div className="relative">
                     <Briefcase size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
                       value={formData.association_role}
                       onChange={(e) => setFormData({ ...formData, association_role: e.target.value })}
-                      className="w-full bg-slate-700/50 border border-slate-600 rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500"
+                      placeholder="Votre activite ou metier"
+                      className="w-full bg-slate-700/50 border border-slate-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                 </div>
@@ -330,7 +336,7 @@ export function ProfilePage() {
                   <div className="flex items-center gap-4 p-4 bg-slate-700/30 rounded-lg">
                     <Building2 size={20} className="text-slate-400" />
                     <div>
-                      <p className="text-sm text-slate-400">Association</p>
+                      <p className="text-sm text-slate-400">Organisation</p>
                       <p className="text-white">{profile.association_name}</p>
                     </div>
                   </div>
@@ -339,7 +345,7 @@ export function ProfilePage() {
                   <div className="flex items-center gap-4 p-4 bg-slate-700/30 rounded-lg">
                     <Briefcase size={20} className="text-slate-400" />
                     <div>
-                      <p className="text-sm text-slate-400">Role</p>
+                      <p className="text-sm text-slate-400">Fonction</p>
                       <p className="text-white">{profile.association_role}</p>
                     </div>
                   </div>

@@ -10,7 +10,7 @@ export function HomePage({ onGetStarted, onSignIn }: HomePageProps) {
     {
       icon: BookOpen,
       title: 'Parcours Structures',
-      description: 'Des formations progressives adaptees au secteur associatif',
+      description: 'Des formations progressives pour tous les niveaux',
     },
     {
       icon: Target,
@@ -25,7 +25,7 @@ export function HomePage({ onGetStarted, onSignIn }: HomePageProps) {
     {
       icon: Users,
       title: 'Communaute',
-      description: 'Echangez avec d\'autres acteurs du monde associatif',
+      description: 'Echangez avec d\'autres passionnes et professionnels',
     },
   ];
 
@@ -43,8 +43,8 @@ export function HomePage({ onGetStarted, onSignIn }: HomePageProps) {
       hours: 15,
     },
     {
-      title: 'Financement Associatif',
-      description: 'Diversifiez vos sources de revenus',
+      title: 'Financement de Projets',
+      description: 'Diversifiez vos sources de financement',
       color: 'amber',
       hours: 20,
     },
@@ -74,7 +74,7 @@ export function HomePage({ onGetStarted, onSignIn }: HomePageProps) {
               </div>
               <div>
                 <h1 className="font-bold text-white">Intelligence Economique</h1>
-                <p className="text-xs text-slate-400">Pour le secteur associatif</p>
+                <p className="text-xs text-slate-400">Formation pour tous</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -105,12 +105,12 @@ export function HomePage({ onGetStarted, onSignIn }: HomePageProps) {
             Maitrisez l'Intelligence
             <br />
             <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-              Economique Associative
+              Economique
             </span>
           </h1>
           <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-            Developpez vos competences strategiques pour faire grandir votre association.
-            Apprenez a veiller, analyser, resauter et financer vos projets.
+            Developpez vos competences strategiques pour vos projets personnels ou professionnels.
+            Apprenez a veiller, analyser, resauter et financer vos initiatives.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
@@ -173,7 +173,7 @@ export function HomePage({ onGetStarted, onSignIn }: HomePageProps) {
       <section className="py-20 px-4 bg-slate-800/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4">4 Parcours pour transformer votre association</h2>
+            <h2 className="text-3xl font-bold text-white mb-4">4 Parcours pour developper vos competences</h2>
             <p className="text-slate-400 max-w-2xl mx-auto">
               Chaque parcours vous guide pas a pas vers la maitrise d'un aspect essentiel de l'IE
             </p>
@@ -225,7 +225,7 @@ export function HomePage({ onGetStarted, onSignIn }: HomePageProps) {
             <Shield size={48} className="text-white/80 mx-auto mb-6" />
             <h2 className="text-3xl font-bold text-white mb-4">Pret a developper votre potentiel ?</h2>
             <p className="text-emerald-100 mb-8 max-w-xl mx-auto">
-              Rejoignez une communaute d'acteurs associatifs engages et transformez votre approche strategique.
+              Rejoignez une communaute de passionnes et de professionnels engages. Transformez votre approche strategique.
             </p>
             <button
               onClick={onGetStarted}
@@ -244,7 +244,7 @@ export function HomePage({ onGetStarted, onSignIn }: HomePageProps) {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">IE</span>
               </div>
-              <span className="text-slate-400">Intelligence Economique Associative</span>
+              <span className="text-slate-400">Intelligence Economique - Formation pour tous</span>
             </div>
             <p className="text-slate-500 text-sm">
               Plateforme d'education populaire - Tous droits reserves
