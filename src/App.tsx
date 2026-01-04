@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Page, NavigationState } from './types';
+import { useLocalCorpus } from './hooks/useLocalCorpus';
 
 import { HomePage } from './components/pages/HomePage';
 import { AuthPage } from './components/pages/AuthPage';
@@ -21,6 +22,7 @@ import { GoodieDetailPage } from './components/pages/GoodieDetailPage';
 import { SkillTreePage } from './components/pages/SkillTreePage';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
+import { SearchModal } from './components/search/SearchModal';
 
 const PAGE_TITLES: Record<Page, string> = {
   home: 'Accueil',
@@ -51,6 +53,8 @@ function AppContent() {
   const [nav, setNav] = useState<NavigationState>({ page: 'home' });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const corpus = useLocalCorpus();
 
   useEffect(() => {
     if (!loading) {
@@ -68,6 +72,10 @@ function AppContent() {
     setNav({ page, ...params });
     setMobileMenuOpen(false);
   };
+
+  const handleSearchNavigate = useCallback((page: string, params?: Record<string, string>) => {
+    navigate(page as Page, params as Partial<NavigationState>);
+  }, []);
 
   if (loading) {
     return (
@@ -228,6 +236,7 @@ function AppContent() {
         <Header
           title={PAGE_TITLES[nav.page]}
           onMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onSearchClick={() => setSearchOpen(true)}
         />
 
         <main className="min-h-[calc(100vh-4rem)]">
@@ -241,6 +250,13 @@ function AppContent() {
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
+
+      <SearchModal
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        corpusItems={corpus.items}
+        onNavigate={handleSearchNavigate}
+      />
     </div>
   );
 }
