@@ -23,6 +23,8 @@ const BADGES: Badge[] = [
 ];
 
 function App() {
+  const hasSupabaseConfig = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+
   const [screen, setScreen] = useState<GameScreen>('welcome');
   const [username, setUsername] = useState('');
   const [jobProfile, setJobProfile] = useState<JobProfile | null>(null);
@@ -37,6 +39,25 @@ function App() {
   const [totalTime, setTotalTime] = useState(0);
   const [pendingBadge, setPendingBadge] = useState<Badge | null>(null);
   const [completedChallenges, setCompletedChallenges] = useState<string[]>([]);
+
+  if (!hasSupabaseConfig) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-8">
+        <div className="max-w-2xl bg-red-500/10 border-2 border-red-500 rounded-xl p-8 text-white">
+          <h1 className="text-3xl font-bold mb-4 text-red-400">Configuration Manquante</h1>
+          <p className="text-lg mb-4">Les variables d'environnement Supabase ne sont pas configurées.</p>
+          <div className="bg-slate-800 rounded-lg p-4 mb-4 font-mono text-sm">
+            <p className="mb-2">Dans Vercel → Settings → Environment Variables, ajoutez :</p>
+            <ul className="list-disc list-inside space-y-1 text-amber-300">
+              <li>VITE_SUPABASE_URL</li>
+              <li>VITE_SUPABASE_ANON_KEY</li>
+            </ul>
+          </div>
+          <p className="text-sm text-slate-300">Puis redéployez l'application.</p>
+        </div>
+      </div>
+    );
+  }
 
   const awardBadge = useCallback((badgeId: string) => {
     const badge = BADGES.find(b => b.id === badgeId);
