@@ -6,6 +6,7 @@ import { GameCollection, GameCard, GameType } from '../../types';
 import { FlashcardGame } from '../games/FlashcardGame';
 import { MCQGame } from '../games/MCQGame';
 import { MatchingGame } from '../games/MatchingGame';
+import { ScenarioGame } from '../games/ScenarioGame';
 import { GameResults } from '../games/GameResults';
 import { BreakModal } from '../wellness/BreakModal';
 import { BlinkReminder } from '../wellness/BlinkReminder';
@@ -192,6 +193,15 @@ export function GamePlayPage({ collectionId, onBack }: GamePlayPageProps) {
       case 'matching':
         return (
           <MatchingGame
+            cards={cards}
+            onComplete={handleGameComplete}
+            onExit={onBack}
+            mode={gameMode}
+          />
+        );
+      case 'scenario':
+        return (
+          <ScenarioGame
             cards={cards}
             onComplete={handleGameComplete}
             onExit={onBack}

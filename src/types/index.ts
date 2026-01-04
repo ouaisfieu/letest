@@ -325,7 +325,8 @@ export type Page =
   | 'certifications'
   | 'settings'
   | 'games'
-  | 'game-play';
+  | 'game-play'
+  | 'admin';
 
 export interface NavigationState {
   page: Page;

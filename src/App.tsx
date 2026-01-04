@@ -15,6 +15,7 @@ import { CertificationsPage } from './components/pages/CertificationsPage';
 import { SettingsPage } from './components/pages/SettingsPage';
 import { GamesPage } from './components/pages/GamesPage';
 import { GamePlayPage } from './components/pages/GamePlayPage';
+import { AdminPage } from './components/pages/AdminPage';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 
@@ -36,6 +37,7 @@ const PAGE_TITLES: Record<Page, string> = {
   settings: 'Parametres',
   games: 'Jeux Educatifs',
   'game-play': 'En jeu',
+  admin: 'Gestion Contenu',
 };
 
 function AppContent() {
@@ -117,6 +119,8 @@ function AppContent() {
           <DashboardPage
             onNavigateToPath={(pathId) => navigate('path-detail', { pathId })}
             onNavigateToAchievements={() => navigate('achievements')}
+            onNavigateToGames={() => navigate('games')}
+            onPlayGame={(collectionId) => navigate('game-play', { collectionId })}
           />
         );
       case 'paths':
@@ -168,11 +172,15 @@ function AppContent() {
             onBack={() => navigate('games')}
           />
         ) : null;
+      case 'admin':
+        return <AdminPage />;
       default:
         return (
           <DashboardPage
             onNavigateToPath={(pathId) => navigate('path-detail', { pathId })}
             onNavigateToAchievements={() => navigate('achievements')}
+            onNavigateToGames={() => navigate('games')}
+            onPlayGame={(collectionId) => navigate('game-play', { collectionId })}
           />
         );
     }

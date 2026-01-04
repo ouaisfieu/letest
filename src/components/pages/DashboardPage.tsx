@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Flame,
   Target,
@@ -15,18 +15,27 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { LearningPath, Achievement, UserAchievement, UserDailyProgress } from '../../types';
 import { CompetencyRadar } from '../ui/CompetencyRadar';
+import { GamesWidget } from '../dashboard/GamesWidget';
+import { WellnessWidget } from '../wellness/WellnessWidget';
+import { useSessionTracker } from '../../hooks/useSessionTracker';
 
 interface DashboardPageProps {
   onNavigateToPath: (pathId: string) => void;
   onNavigateToAchievements: () => void;
+  onNavigateToGames: () => void;
+  onPlayGame: (collectionId: string) => void;
 }
 
-export function DashboardPage({ onNavigateToPath, onNavigateToAchievements }: DashboardPageProps) {
+export function DashboardPage({ onNavigateToPath, onNavigateToAchievements, onNavigateToGames, onPlayGame }: DashboardPageProps) {
   const { profile } = useAuth();
   const [paths, setPaths] = useState<LearningPath[]>([]);
   const [recentAchievements, setRecentAchievements] = useState<(UserAchievement & { achievement: Achievement })[]>([]);
   const [todayProgress, setTodayProgress] = useState<UserDailyProgress | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const sessionTracker = useSessionTracker({
+    idleThreshold: 120,
+  });
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -246,6 +255,18 @@ export function DashboardPage({ onNavigateToPath, onNavigateToAchievements }: Da
         </div>
 
         <div className="space-y-6">
+          <WellnessWidget
+            sessionTime={sessionTracker.formatTime(sessionTracker.stats.totalSeconds)}
+            activeTime={sessionTracker.formatTime(sessionTracker.stats.activeSeconds)}
+            isIdle={sessionTracker.isIdle}
+            breaksTaken={sessionTracker.stats.breaks.length}
+          />
+
+          <GamesWidget
+            onNavigateToGames={onNavigateToGames}
+            onPlayGame={onPlayGame}
+          />
+
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-4">
               <TrendingUp size={20} className="text-blue-400" />
@@ -260,12 +281,12 @@ export function DashboardPage({ onNavigateToPath, onNavigateToAchievements }: Da
           <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <Award size={20} className="text-purple-400" />
+                <Award size={20} className="text-teal-400" />
                 Derniers badges
               </h3>
               <button
                 onClick={onNavigateToAchievements}
-                className="text-purple-400 hover:text-purple-300 text-sm font-medium flex items-center gap-1"
+                className="text-teal-400 hover:text-teal-300 text-sm font-medium flex items-center gap-1"
               >
                 Tous <ChevronRight size={16} />
               </button>

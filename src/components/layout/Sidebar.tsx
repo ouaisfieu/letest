@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Gamepad2,
+  FileEdit,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Page } from '../../types';
@@ -32,6 +33,7 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
     { page: 'achievements' as Page, icon: Award, label: 'Badges' },
     { page: 'community' as Page, icon: Users, label: 'Communaute' },
     { page: 'certifications' as Page, icon: Trophy, label: 'Certifications' },
+    { page: 'admin' as Page, icon: FileEdit, label: 'Gestion Contenu' },
     { page: 'profile' as Page, icon: User, label: 'Profil' },
     { page: 'settings' as Page, icon: Settings, label: 'Parametres' },
   ];
