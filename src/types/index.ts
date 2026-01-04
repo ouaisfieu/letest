@@ -1,97 +1,334 @@
-export interface JobProfile {
+export interface UserProfile {
   id: string;
+  username: string;
+  display_name: string;
+  bio: string;
+  avatar_config: AvatarConfig;
+  association_name: string;
+  association_role: string;
+  city: string;
+  interests: string[];
+  current_level: number;
+  total_xp: number;
+  streak_days: number;
+  last_activity_date: string;
+  onboarding_completed: boolean;
+  email_notifications: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AvatarConfig {
+  skin: string;
+  hair: string;
+  accessory: string;
+  background: string;
+}
+
+export interface LearningPath {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  objectives: string[];
+  icon: string;
+  color: string;
+  difficulty_level: number;
+  estimated_hours: number;
+  order_index: number;
+  is_published: boolean;
+  created_at: string;
+  modules?: Module[];
+  progress?: PathProgress;
+}
+
+export interface PathProgress {
+  completedModules: number;
+  totalModules: number;
+  completedLessons: number;
+  totalLessons: number;
+  percentage: number;
+}
+
+export interface Module {
+  id: string;
+  learning_path_id: string;
+  slug: string;
+  title: string;
+  description: string;
+  learning_objectives: string[];
+  icon: string;
+  xp_reward: number;
+  order_index: number;
+  is_published: boolean;
+  created_at: string;
+  lessons?: Lesson[];
+  progress?: ModuleProgress;
+}
+
+export interface ModuleProgress {
+  completedLessons: number;
+  totalLessons: number;
+  percentage: number;
+}
+
+export interface Lesson {
+  id: string;
+  module_id: string;
+  slug: string;
+  title: string;
+  content_type: 'article' | 'video' | 'interactive' | 'case_study';
+  content: LessonContent;
+  summary: string;
+  key_takeaways: string[];
+  xp_reward: number;
+  estimated_minutes: number;
+  order_index: number;
+  is_published: boolean;
+  created_at: string;
+  resources?: LessonResource[];
+  progress?: LessonProgress;
+  quiz?: Quiz;
+}
+
+export interface LessonContent {
+  sections?: ContentSection[];
+  case?: CaseStudy;
+  tools?: Tool[];
+  exercise?: Exercise;
+}
+
+export interface ContentSection {
+  title: string;
+  content: string;
+}
+
+export interface CaseStudy {
+  title: string;
+  context: string;
+  challenge: string;
+  solution: string;
+  results: string[];
+  reflection_questions?: string[];
+}
+
+export interface Tool {
+  name: string;
+  description: string;
+  link: string;
+  tips: string[];
+}
+
+export interface Exercise {
+  title: string;
+  steps: string[];
+}
+
+export interface LessonResource {
+  id: string;
+  lesson_id: string;
+  title: string;
+  resource_type: 'pdf' | 'video' | 'link' | 'template' | 'tool';
+  url: string;
+  description: string;
+  is_premium: boolean;
+  order_index: number;
+}
+
+export interface LessonProgress {
+  status: 'not_started' | 'in_progress' | 'completed';
+  progress_percentage: number;
+  time_spent_seconds: number;
+  completed_at?: string;
+}
+
+export interface Competency {
+  id: string;
+  slug: string;
+  name: string;
+  category: 'veille' | 'analyse' | 'reseau' | 'strategie' | 'communication' | 'financement';
+  description: string;
+  icon: string;
+  max_level: number;
+}
+
+export interface UserCompetency {
+  id: string;
+  user_id: string;
+  competency_id: string;
+  current_level: number;
+  current_xp: number;
+  xp_to_next_level: number;
+  competency?: Competency;
+}
+
+export interface Achievement {
+  id: string;
+  slug: string;
   name: string;
   description: string;
   icon: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  category: 'learning' | 'community' | 'streak' | 'mastery' | 'special';
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  xp_reward: number;
+  unlock_condition: Record<string, unknown>;
+  is_hidden: boolean;
+}
+
+export interface UserAchievement {
+  id: string;
+  user_id: string;
+  achievement_id: string;
+  earned_at: string;
+  achievement?: Achievement;
+}
+
+export interface Quiz {
+  id: string;
+  lesson_id: string;
+  title: string;
+  description: string;
+  passing_score: number;
+  time_limit_seconds?: number;
+  max_attempts: number;
+  xp_reward: number;
+  questions?: QuizQuestion[];
+}
+
+export interface QuizQuestion {
+  id: string;
+  quiz_id: string;
+  question_text: string;
+  question_type: 'single' | 'multiple' | 'true_false' | 'open';
+  options: string[];
+  correct_answers: number[];
+  explanation: string;
+  points: number;
+  order_index: number;
+}
+
+export interface UserQuizAttempt {
+  id: string;
+  user_id: string;
+  quiz_id: string;
+  score: number;
+  answers: Record<string, unknown>;
+  time_taken_seconds?: number;
+  passed: boolean;
+  attempted_at: string;
+}
+
+export interface DailyChallenge {
+  id: string;
+  challenge_date: string;
+  title: string;
+  description: string;
+  challenge_type: 'quiz' | 'reading' | 'reflection' | 'action';
+  content: Record<string, unknown>;
+  xp_reward: number;
+}
+
+export interface UserDailyProgress {
+  id: string;
+  user_id: string;
+  activity_date: string;
+  xp_earned: number;
+  lessons_completed: number;
+  quizzes_passed: number;
+  time_spent_minutes: number;
+  daily_challenge_completed: boolean;
+}
+
+export interface DiscussionTopic {
+  id: string;
+  author_id: string;
+  module_id?: string;
+  title: string;
+  content: string;
+  tags: string[];
+  is_pinned: boolean;
+  is_locked: boolean;
+  view_count: number;
+  reply_count: number;
+  last_activity_at: string;
+  created_at: string;
+  author?: UserProfile;
+  replies?: DiscussionReply[];
+}
+
+export interface DiscussionReply {
+  id: string;
+  topic_id: string;
+  author_id: string;
+  parent_reply_id?: string;
+  content: string;
+  is_solution: boolean;
+  upvotes: number;
+  created_at: string;
+  updated_at: string;
+  author?: UserProfile;
+}
+
+export interface Certification {
+  id: string;
+  learning_path_id: string;
+  name: string;
+  description: string;
+  requirements: Record<string, unknown>;
+  badge_image_url?: string;
+  is_active: boolean;
+}
+
+export interface UserCertification {
+  id: string;
+  user_id: string;
+  certification_id: string;
+  issued_at: string;
+  certificate_number: string;
+  certification?: Certification;
+}
+
+export interface UserNotification {
+  id: string;
+  user_id: string;
+  notification_type: 'achievement' | 'level_up' | 'reply' | 'mention' | 'system';
+  title: string;
+  message: string;
+  data: Record<string, unknown>;
+  is_read: boolean;
   created_at: string;
 }
 
-export interface Skill {
+export interface UserConnection {
   id: string;
-  name: string;
-  category: 'technical' | 'analytical' | 'communication' | 'leadership' | 'creative';
-  description: string;
+  follower_id: string;
+  following_id: string;
+  created_at: string;
+  follower?: UserProfile;
+  following?: UserProfile;
 }
 
-export interface JobProfileSkill {
-  id: string;
-  job_profile_id: string;
-  skill_id: string;
-  required_level: number;
-  skills?: Skill;
-}
+export type Page =
+  | 'home'
+  | 'auth'
+  | 'onboarding'
+  | 'dashboard'
+  | 'paths'
+  | 'path-detail'
+  | 'module-detail'
+  | 'lesson'
+  | 'quiz'
+  | 'achievements'
+  | 'profile'
+  | 'community'
+  | 'topic'
+  | 'certifications'
+  | 'settings';
 
-export interface Question {
-  question: string;
-  options: string[];
-  correct: number;
-}
-
-export interface ChallengeContent {
-  questions?: Question[];
-  scenario?: string;
-  problem?: string;
-  testCases?: { input: string; expected: string }[];
-  hints?: string[];
-}
-
-export interface Challenge {
-  id: string;
-  skill_id: string;
-  title: string;
-  description: string;
-  type: 'qcm' | 'coding' | 'scenario' | 'logic';
-  difficulty: number;
-  time_limit: number | null;
-  xp_reward: number;
-  content: ChallengeContent;
-  skills?: Skill;
-}
-
-export interface UserSession {
-  id: string;
-  job_profile_id: string;
-  username: string;
-  current_level: number;
-  total_xp: number;
-  started_at: string;
-  completed_at: string | null;
-}
-
-export interface UserResult {
-  id: string;
-  session_id: string;
-  challenge_id: string;
-  skill_id: string;
-  score: number;
-  time_taken: number;
-  completed_at: string;
-}
-
-export interface SkillScore {
-  skill: Skill;
-  score: number;
-  requiredLevel: number;
-  challengesCompleted: number;
-}
-
-export interface GameState {
-  session: UserSession | null;
-  jobProfile: JobProfile | null;
-  currentLevel: number;
-  currentChallengeIndex: number;
-  challenges: Challenge[];
-  completedChallenges: string[];
-  skillScores: Record<string, SkillScore>;
-  totalXP: number;
-  badges: Badge[];
-}
-
-export interface Badge {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  earnedAt?: string;
+export interface NavigationState {
+  page: Page;
+  pathId?: string;
+  moduleId?: string;
+  lessonId?: string;
+  topicId?: string;
 }

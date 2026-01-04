@@ -1,285 +1,205 @@
-import { useState, useCallback } from 'react';
-import { supabase } from './lib/supabase';
-import { JobProfile, JobProfileSkill, Challenge, UserSession, SkillScore, Badge } from './types';
-import { WelcomeScreen } from './components/WelcomeScreen';
-import { JobSelection } from './components/JobSelection';
-import { ChallengeScreen } from './components/ChallengeScreen';
-import { ResultsScreen } from './components/ResultsScreen';
-import { GameHeader } from './components/GameHeader';
-import { BadgeModal } from './components/BadgeModal';
-import { AIInterview } from './components/AIInterview';
+import { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { Page, NavigationState } from './types';
 
-type GameScreen = 'welcome' | 'job-selection' | 'challenge' | 'ai-interview' | 'results';
+import { HomePage } from './components/pages/HomePage';
+import { AuthPage } from './components/pages/AuthPage';
+import { DashboardPage } from './components/pages/DashboardPage';
+import { PathsPage } from './components/pages/PathsPage';
+import { PathDetailPage } from './components/pages/PathDetailPage';
+import { LessonPage } from './components/pages/LessonPage';
+import { AchievementsPage } from './components/pages/AchievementsPage';
+import { ProfilePage } from './components/pages/ProfilePage';
+import { CommunityPage } from './components/pages/CommunityPage';
+import { CertificationsPage } from './components/pages/CertificationsPage';
+import { SettingsPage } from './components/pages/SettingsPage';
+import { Sidebar } from './components/layout/Sidebar';
+import { Header } from './components/layout/Header';
 
-const BADGES: Badge[] = [
-  { id: 'first-blood', name: 'Premier Sang', description: 'Completez votre premiere epreuve', icon: '🎯' },
-  { id: 'perfect', name: 'Parfait', description: 'Obtenez 100% sur une epreuve', icon: '💯' },
-  { id: 'speed-demon', name: 'Vitesse Eclair', description: 'Terminez une epreuve chronometree avec plus de 50% du temps restant', icon: '⚡' },
-  { id: 'scholar', name: 'Erudit', description: 'Completez 5 epreuves', icon: '📚' },
-  { id: 'master', name: 'Maitre', description: 'Obtenez plus de 80% de moyenne', icon: '🏆' },
-  { id: 'completionist', name: 'Completiste', description: 'Terminez toutes les epreuves', icon: '🌟' },
-  { id: 'communicator', name: 'Communicant', description: 'Terminez la simulation d\'entretien IA', icon: '🗣️' },
-  { id: 'star-interview', name: 'Star de l\'Entretien', description: 'Obtenez 8+/10 sur une question d\'entretien', icon: '✨' },
-];
+const PAGE_TITLES: Record<Page, string> = {
+  home: 'Accueil',
+  auth: 'Connexion',
+  onboarding: 'Bienvenue',
+  dashboard: 'Tableau de bord',
+  paths: 'Parcours',
+  'path-detail': 'Parcours',
+  'module-detail': 'Module',
+  lesson: 'Lecon',
+  quiz: 'Quiz',
+  achievements: 'Badges',
+  profile: 'Profil',
+  community: 'Communaute',
+  topic: 'Discussion',
+  certifications: 'Certifications',
+  settings: 'Parametres',
+};
 
-function App() {
+function AppContent() {
+  const { user, profile, loading } = useAuth();
+  const [nav, setNav] = useState<NavigationState>({ page: 'home' });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      if (user && profile) {
+        if (nav.page === 'home' || nav.page === 'auth') {
+          setNav({ page: 'dashboard' });
+        }
+      } else if (!user && nav.page !== 'home' && nav.page !== 'auth') {
+        setNav({ page: 'home' });
+      }
+    }
+  }, [user, profile, loading, nav.page]);
+
+  const navigate = (page: Page, params?: Partial<NavigationState>) => {
+    setNav({ page, ...params });
+    setMobileMenuOpen(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-400">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
   const hasSupabaseConfig = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
-
-  const [screen, setScreen] = useState<GameScreen>('welcome');
-  const [username, setUsername] = useState('');
-  const [jobProfile, setJobProfile] = useState<JobProfile | null>(null);
-  const [profileSkills, setProfileSkills] = useState<JobProfileSkill[]>([]);
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
-  const [session, setSession] = useState<UserSession | null>(null);
-  const [skillScores, setSkillScores] = useState<Record<string, SkillScore>>({});
-  const [totalXP, setTotalXP] = useState(0);
-  const [level, setLevel] = useState(1);
-  const [badges, setBadges] = useState<Badge[]>([]);
-  const [totalTime, setTotalTime] = useState(0);
-  const [pendingBadge, setPendingBadge] = useState<Badge | null>(null);
-  const [completedChallenges, setCompletedChallenges] = useState<string[]>([]);
 
   if (!hasSupabaseConfig) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-8">
         <div className="max-w-2xl bg-red-500/10 border-2 border-red-500 rounded-xl p-8 text-white">
           <h1 className="text-3xl font-bold mb-4 text-red-400">Configuration Manquante</h1>
-          <p className="text-lg mb-4">Les variables d'environnement Supabase ne sont pas configurées.</p>
+          <p className="text-lg mb-4">Les variables d'environnement Supabase ne sont pas configurees.</p>
           <div className="bg-slate-800 rounded-lg p-4 mb-4 font-mono text-sm">
-            <p className="mb-2">Dans Vercel → Settings → Environment Variables, ajoutez :</p>
+            <p className="mb-2">Dans Vercel - Settings - Environment Variables, ajoutez :</p>
             <ul className="list-disc list-inside space-y-1 text-amber-300">
               <li>VITE_SUPABASE_URL</li>
               <li>VITE_SUPABASE_ANON_KEY</li>
             </ul>
           </div>
-          <p className="text-sm text-slate-300">Puis redéployez l'application.</p>
+          <p className="text-sm text-slate-300">Puis redeployez l'application.</p>
         </div>
       </div>
     );
   }
 
-  const awardBadge = useCallback((badgeId: string) => {
-    const badge = BADGES.find(b => b.id === badgeId);
-    if (badge && !badges.find(b => b.id === badgeId)) {
-      const newBadge = { ...badge, earnedAt: new Date().toISOString() };
-      setBadges(prev => [...prev, newBadge]);
-      setPendingBadge(newBadge);
+  if (!user) {
+    if (nav.page === 'auth') {
+      return (
+        <AuthPage
+          onBack={() => navigate('home')}
+          onSuccess={() => navigate('dashboard')}
+        />
+      );
     }
-  }, [badges]);
+    return (
+      <HomePage
+        onGetStarted={() => navigate('auth')}
+        onSignIn={() => navigate('auth')}
+      />
+    );
+  }
 
-  const handleStart = async (name: string) => {
-    setUsername(name);
-    setScreen('job-selection');
-  };
-
-  const handleJobSelect = async (profile: JobProfile, skills: JobProfileSkill[]) => {
-    setJobProfile(profile);
-    setProfileSkills(skills);
-
-    const skillIds = skills.map(s => s.skill_id);
-    const { data: challengesData } = await supabase
-      .from('challenges')
-      .select('*, skills(*)')
-      .in('skill_id', skillIds)
-      .order('difficulty', { ascending: true });
-
-    if (challengesData) {
-      const sortedChallenges = challengesData.sort((a, b) => {
-        if (a.difficulty !== b.difficulty) return a.difficulty - b.difficulty;
-        return (a.time_limit || 0) - (b.time_limit || 0);
-      });
-      setChallenges(sortedChallenges);
-    }
-
-    const initialSkillScores: Record<string, SkillScore> = {};
-    for (const ps of skills) {
-      if (ps.skills) {
-        initialSkillScores[ps.skill_id] = {
-          skill: ps.skills,
-          score: 0,
-          requiredLevel: ps.required_level,
-          challengesCompleted: 0,
-        };
-      }
-    }
-    setSkillScores(initialSkillScores);
-
-    const { data: sessionData } = await supabase
-      .from('user_sessions')
-      .insert({
-        job_profile_id: profile.id,
-        username: username,
-        current_level: 1,
-        total_xp: 0,
-      })
-      .select()
-      .single();
-
-    if (sessionData) {
-      setSession(sessionData);
-    }
-
-    setCurrentChallengeIndex(0);
-    setScreen('challenge');
-  };
-
-  const handleChallengeComplete = async (score: number, timeTaken: number) => {
-    const challenge = challenges[currentChallengeIndex];
-    if (!challenge || !session) return;
-
-    const xpEarned = Math.round(challenge.xp_reward * (score / 100));
-    const newTotalXP = totalXP + xpEarned;
-    setTotalXP(newTotalXP);
-    setTotalTime(prev => prev + timeTaken);
-    setCompletedChallenges(prev => [...prev, challenge.id]);
-
-    const newLevel = Math.floor(newTotalXP / 500) + 1;
-    if (newLevel > level) {
-      setLevel(newLevel);
-    }
-
-    const existingScore = skillScores[challenge.skill_id];
-    const newScore = existingScore
-      ? Math.round((existingScore.score * existingScore.challengesCompleted + score) / (existingScore.challengesCompleted + 1))
-      : score;
-
-    setSkillScores(prev => ({
-      ...prev,
-      [challenge.skill_id]: {
-        ...prev[challenge.skill_id],
-        score: newScore,
-        challengesCompleted: (prev[challenge.skill_id]?.challengesCompleted || 0) + 1,
-      },
-    }));
-
-    await supabase.from('user_results').insert({
-      session_id: session.id,
-      challenge_id: challenge.id,
-      skill_id: challenge.skill_id,
-      score,
-      time_taken: timeTaken,
-    });
-
-    await supabase
-      .from('user_sessions')
-      .update({ total_xp: newTotalXP, current_level: newLevel })
-      .eq('id', session.id);
-
-    if (completedChallenges.length === 0) {
-      awardBadge('first-blood');
-    }
-    if (score === 100) {
-      awardBadge('perfect');
-    }
-    if (challenge.time_limit && timeTaken < challenge.time_limit * 0.5) {
-      awardBadge('speed-demon');
-    }
-    if (completedChallenges.length + 1 === 5) {
-      awardBadge('scholar');
-    }
-
-    if (currentChallengeIndex < challenges.length - 1) {
-      setCurrentChallengeIndex(prev => prev + 1);
-    } else {
-      const avgScore = Object.values(skillScores).reduce((sum, s) => sum + s.score, 0) / Object.keys(skillScores).length;
-      if (avgScore >= 80) {
-        awardBadge('master');
-      }
-      awardBadge('completionist');
-      setScreen('ai-interview');
+  const renderPage = () => {
+    switch (nav.page) {
+      case 'dashboard':
+        return (
+          <DashboardPage
+            onNavigateToPath={(pathId) => navigate('path-detail', { pathId })}
+            onNavigateToAchievements={() => navigate('achievements')}
+          />
+        );
+      case 'paths':
+        return (
+          <PathsPage
+            onSelectPath={(pathId) => navigate('path-detail', { pathId })}
+          />
+        );
+      case 'path-detail':
+        return nav.pathId ? (
+          <PathDetailPage
+            pathId={nav.pathId}
+            onBack={() => navigate('paths')}
+            onSelectLesson={(lessonId) => navigate('lesson', { lessonId })}
+          />
+        ) : null;
+      case 'lesson':
+        return nav.lessonId ? (
+          <LessonPage
+            lessonId={nav.lessonId}
+            onBack={() => nav.pathId ? navigate('path-detail', { pathId: nav.pathId }) : navigate('paths')}
+            onComplete={() => nav.pathId ? navigate('path-detail', { pathId: nav.pathId }) : navigate('paths')}
+          />
+        ) : null;
+      case 'achievements':
+        return <AchievementsPage />;
+      case 'profile':
+        return <ProfilePage />;
+      case 'community':
+        return (
+          <CommunityPage
+            onSelectTopic={(topicId) => navigate('topic', { topicId })}
+          />
+        );
+      case 'certifications':
+        return <CertificationsPage />;
+      case 'settings':
+        return <SettingsPage />;
+      default:
+        return (
+          <DashboardPage
+            onNavigateToPath={(pathId) => navigate('path-detail', { pathId })}
+            onNavigateToAchievements={() => navigate('achievements')}
+          />
+        );
     }
   };
-
-  const handleInterviewComplete = async (interviewScores: number[]) => {
-    awardBadge('communicator');
-    if (interviewScores.some(score => score >= 8)) {
-      awardBadge('star-interview');
-    }
-
-    if (session) {
-      await supabase
-        .from('user_sessions')
-        .update({ completed_at: new Date().toISOString() })
-        .eq('id', session.id);
-    }
-
-    setScreen('results');
-  };
-
-  const handleSkipInterview = async () => {
-    if (session) {
-      await supabase
-        .from('user_sessions')
-        .update({ completed_at: new Date().toISOString() })
-        .eq('id', session.id);
-    }
-    setScreen('results');
-  };
-
-  const handleRestart = () => {
-    setScreen('welcome');
-    setUsername('');
-    setJobProfile(null);
-    setProfileSkills([]);
-    setChallenges([]);
-    setCurrentChallengeIndex(0);
-    setSession(null);
-    setSkillScores({});
-    setTotalXP(0);
-    setLevel(1);
-    setBadges([]);
-    setTotalTime(0);
-    setCompletedChallenges([]);
-  };
-
-  const skillScoresArray: SkillScore[] = Object.values(skillScores).filter(s => s.challengesCompleted > 0);
 
   return (
     <div className="min-h-screen bg-slate-900">
-      {screen === 'welcome' && <WelcomeScreen onStart={handleStart} />}
-      {screen === 'job-selection' && <JobSelection onSelect={handleJobSelect} />}
-      {screen === 'challenge' && challenges[currentChallengeIndex] && (
-        <>
-          <GameHeader
-            username={username}
-            level={level}
-            xp={totalXP}
-            jobTitle={jobProfile?.name || ''}
-          />
-          <div className="pt-20">
-            <ChallengeScreen
-              challenge={challenges[currentChallengeIndex]}
-              onComplete={handleChallengeComplete}
-              level={level}
-              totalChallenges={challenges.length}
-              currentIndex={currentChallengeIndex}
-            />
-          </div>
-        </>
-      )}
-      {screen === 'ai-interview' && jobProfile && (
-        <AIInterview
-          jobTitle={jobProfile.name}
-          onComplete={handleInterviewComplete}
-          onSkip={handleSkipInterview}
+      <Sidebar
+        currentPage={nav.page}
+        onNavigate={navigate}
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
+
+      <div
+        className={`transition-all duration-300 ${
+          sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+        }`}
+      >
+        <Header
+          title={PAGE_TITLES[nav.page]}
+          onMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         />
-      )}
-      {screen === 'results' && jobProfile && (
-        <ResultsScreen
-          jobProfile={jobProfile}
-          username={username}
-          skillScores={skillScoresArray}
-          totalXP={totalXP}
-          badges={badges}
-          totalTime={totalTime}
-          onRestart={handleRestart}
+
+        <main className="min-h-[calc(100vh-4rem)]">
+          {renderPage()}
+        </main>
+      </div>
+
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
         />
-      )}
-      {pendingBadge && (
-        <BadgeModal badge={pendingBadge} onClose={() => setPendingBadge(null)} />
       )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
