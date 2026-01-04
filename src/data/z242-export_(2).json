@@ -1,0 +1,315 @@
+{
+  "app": "Z-242",
+  "version": "2.0",
+  "exportedAt": "2026-01-02T20:32:05.903Z",
+  "characters": [
+    {
+      "id": "Z3QSN2ZY5",
+      "codename": "Praline",
+      "realname": "Hilde Simon",
+      "type": "agent",
+      "gender": "f",
+      "age": 53,
+      "location": "Charleroi",
+      "cover": "Comptable",
+      "legend": "Ancien·ne employé·e reconverti·e après un burn-out. A déménagé il y a quelques années pour un nouveau départ. Fréquente régulièrement les cafés du quartier.",
+      "strengths": [
+        "Loyal",
+        "Patient"
+      ],
+      "weaknesses": [
+        "Méfiant"
+      ],
+      "skills": [
+        "Informatique",
+        "Infiltration",
+        "Surveillance"
+      ],
+      "stats": {
+        "INF": 5,
+        "DIS": 9,
+        "PER": 11,
+        "TEC": 10,
+        "END": 13,
+        "ADA": 8
+      },
+      "fictional": true,
+      "createdAt": "2026-01-02T20:31:30.011Z"
+    },
+    {
+      "id": "ZA103YVLE",
+      "codename": "Phantom",
+      "realname": "Brigitte Simon",
+      "type": "agent",
+      "gender": "f",
+      "age": 33,
+      "location": "Bruges",
+      "cover": "Commercial",
+      "legend": "Consultant·e freelance, travaille depuis son domicile avec des missions ponctuelles. Voyage occasionnellement pour le travail. Discret·e sur sa vie privée.",
+      "strengths": [
+        "Analytique",
+        "Adaptable"
+      ],
+      "weaknesses": [
+        "Méfiant"
+      ],
+      "skills": [
+        "Langues",
+        "Photographie",
+        "Surveillance"
+      ],
+      "stats": {
+        "INF": 10,
+        "DIS": 11,
+        "PER": 5,
+        "TEC": 8,
+        "END": 10,
+        "ADA": 9
+      },
+      "fictional": true,
+      "createdAt": "2026-01-02T20:31:33.596Z"
+    },
+    {
+      "id": "ZBRZCA7DQ",
+      "codename": "Nova",
+      "realname": "Claude Leroy",
+      "type": "agent",
+      "gender": "nb",
+      "age": 53,
+      "location": "Anvers",
+      "cover": "Comptable",
+      "legend": "Consultant·e freelance, travaille depuis son domicile avec des missions ponctuelles. Voyage occasionnellement pour le travail. Discret·e sur sa vie privée.",
+      "strengths": [
+        "Observateur",
+        "Calme"
+      ],
+      "weaknesses": [
+        "Cynique"
+      ],
+      "skills": [
+        "Langues",
+        "Surveillance",
+        "Réseautage"
+      ],
+      "stats": {
+        "INF": 7,
+        "DIS": 5,
+        "PER": 10,
+        "TEC": 13,
+        "END": 10,
+        "ADA": 11
+      },
+      "fictional": true,
+      "createdAt": "2026-01-02T20:31:34.979Z"
+    },
+    {
+      "id": "ZFTFA4HCD",
+      "codename": "Hibou",
+      "realname": "Jean Janssens",
+      "type": "agent",
+      "gender": "m",
+      "age": 43,
+      "location": "Hasselt",
+      "cover": "Bibliothécaire",
+      "legend": "Fonctionnaire de carrière sans vagues. 15 ans d'ancienneté. Routine très stable, passions le week-end uniquement.",
+      "strengths": [
+        "Discret",
+        "Méthodique"
+      ],
+      "weaknesses": [
+        "Réservé"
+      ],
+      "skills": [
+        "Photographie",
+        "Négociation",
+        "Analyse"
+      ],
+      "stats": {
+        "INF": 12,
+        "DIS": 8,
+        "PER": 5,
+        "TEC": 15,
+        "END": 12,
+        "ADA": 9
+      },
+      "fictional": true,
+      "createdAt": "2026-01-02T20:31:36.331Z"
+    },
+    {
+      "id": "ZGJF1SRVV",
+      "codename": "Zenith",
+      "realname": "Koen Lambert",
+      "type": "agent",
+      "gender": "m",
+      "age": 52,
+      "location": "Bruges",
+      "cover": "Employé communal",
+      "legend": "Ancien·ne employé·e reconverti·e après un burn-out. A déménagé il y a quelques années pour un nouveau départ. Fréquente régulièrement les cafés du quartier.",
+      "strengths": [
+        "Observateur",
+        "Calme"
+      ],
+      "weaknesses": [
+        "Cynique"
+      ],
+      "skills": [
+        "Négociation",
+        "Langues",
+        "Photographie"
+      ],
+      "stats": {
+        "INF": 9,
+        "DIS": 6,
+        "PER": 13,
+        "TEC": 10,
+        "END": 12,
+        "ADA": 13
+      },
+      "fictional": true,
+      "createdAt": "2026-01-02T20:31:37.687Z"
+    },
+    {
+      "id": "ZQBSW5HWE",
+      "codename": "Waterzooi",
+      "realname": "Céline Mertens",
+      "type": "agent",
+      "gender": "f",
+      "age": 30,
+      "location": "Bruges",
+      "cover": "Formateur",
+      "legend": "Consultant·e freelance, travaille depuis son domicile avec des missions ponctuelles. Voyage occasionnellement pour le travail. Discret·e sur sa vie privée.",
+      "strengths": [
+        "Calme",
+        "Empathique"
+      ],
+      "weaknesses": [
+        "Méfiant"
+      ],
+      "skills": [
+        "Infiltration",
+        "Analyse",
+        "Photographie"
+      ],
+      "stats": {
+        "INF": 9,
+        "DIS": 6,
+        "PER": 9,
+        "TEC": 6,
+        "END": 13,
+        "ADA": 9
+      },
+      "fictional": true,
+      "createdAt": "2026-01-02T20:31:39.052Z"
+    },
+    {
+      "id": "ZH2K29LGN",
+      "codename": "Écarlate",
+      "realname": "Wim Janssens",
+      "type": "agent",
+      "gender": "m",
+      "age": 31,
+      "location": "Liège",
+      "cover": "Employé communal",
+      "legend": "Fonctionnaire de carrière sans vagues. 15 ans d'ancienneté. Routine très stable, passions le week-end uniquement.",
+      "strengths": [
+        "Observateur",
+        "Loyal"
+      ],
+      "weaknesses": [
+        "Perfectionniste"
+      ],
+      "skills": [
+        "Infiltration",
+        "Surveillance",
+        "Langues"
+      ],
+      "stats": {
+        "INF": 8,
+        "DIS": 8,
+        "PER": 13,
+        "TEC": 10,
+        "END": 14,
+        "ADA": 9
+      },
+      "fictional": true,
+      "createdAt": "2026-01-02T20:31:40.403Z"
+    },
+    {
+      "id": "ZGHVSTFSK",
+      "codename": "Zenith",
+      "realname": "Charlie Wouters",
+      "type": "agent",
+      "gender": "nb",
+      "age": 52,
+      "location": "Wavre",
+      "cover": "Formateur",
+      "legend": "Consultant·e freelance, travaille depuis son domicile avec des missions ponctuelles. Voyage occasionnellement pour le travail. Discret·e sur sa vie privée.",
+      "strengths": [
+        "Calme",
+        "Loyal"
+      ],
+      "weaknesses": [
+        "Cynique"
+      ],
+      "skills": [
+        "Informatique",
+        "Photographie",
+        "Langues"
+      ],
+      "stats": {
+        "INF": 11,
+        "DIS": 10,
+        "PER": 17,
+        "TEC": 10,
+        "END": 11,
+        "ADA": 7
+      },
+      "fictional": true,
+      "createdAt": "2026-01-02T20:31:41.786Z"
+    },
+    {
+      "id": "ZO3RTW552",
+      "codename": "Corbeau",
+      "realname": "Caroline Simon",
+      "type": "agent",
+      "gender": "f",
+      "age": 28,
+      "location": "Anvers",
+      "cover": "Journaliste freelance",
+      "legend": "Fonctionnaire de carrière sans vagues. 15 ans d'ancienneté. Routine très stable, passions le week-end uniquement.",
+      "strengths": [
+        "Analytique",
+        "Discret"
+      ],
+      "weaknesses": [
+        "Méfiant"
+      ],
+      "skills": [
+        "Infiltration",
+        "Photographie",
+        "Surveillance"
+      ],
+      "stats": {
+        "INF": 14,
+        "DIS": 9,
+        "PER": 11,
+        "TEC": 9,
+        "END": 7,
+        "ADA": 13
+      },
+      "fictional": true,
+      "createdAt": "2026-01-02T20:31:43.221Z"
+    }
+  ],
+  "team": [
+    "Z3QSN2ZY5",
+    "ZA103YVLE",
+    "ZBRZCA7DQ",
+    "ZFTFA4HCD",
+    "ZGJF1SRVV",
+    "ZQBSW5HWE",
+    "ZH2K29LGN",
+    "ZGHVSTFSK",
+    "ZO3RTW552"
+  ]
+}
