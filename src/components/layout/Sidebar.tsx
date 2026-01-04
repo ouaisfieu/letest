@@ -12,6 +12,9 @@ import {
   ChevronRight,
   Gamepad2,
   FileEdit,
+  Lightbulb,
+  GitBranch,
+  Palette,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Page } from '../../types';
@@ -29,7 +32,9 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
   const menuItems = [
     { page: 'dashboard' as Page, icon: Home, label: 'Tableau de bord' },
     { page: 'paths' as Page, icon: BookOpen, label: 'Parcours' },
+    { page: 'skill-tree' as Page, icon: GitBranch, label: 'Arbre de Competences' },
     { page: 'games' as Page, icon: Gamepad2, label: 'Jeux' },
+    { page: 'goodies' as Page, icon: Lightbulb, label: 'Goodies' },
     { page: 'achievements' as Page, icon: Award, label: 'Badges' },
     { page: 'community' as Page, icon: Users, label: 'Communaute' },
     { page: 'certifications' as Page, icon: Trophy, label: 'Certifications' },

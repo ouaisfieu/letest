@@ -16,6 +16,9 @@ import { SettingsPage } from './components/pages/SettingsPage';
 import { GamesPage } from './components/pages/GamesPage';
 import { GamePlayPage } from './components/pages/GamePlayPage';
 import { AdminPage } from './components/pages/AdminPage';
+import { GoodiesPage } from './components/pages/GoodiesPage';
+import { GoodieDetailPage } from './components/pages/GoodieDetailPage';
+import { SkillTreePage } from './components/pages/SkillTreePage';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 
@@ -38,6 +41,9 @@ const PAGE_TITLES: Record<Page, string> = {
   games: 'Jeux Educatifs',
   'game-play': 'En jeu',
   admin: 'Gestion Contenu',
+  goodies: 'Goodies du Bidouilleur',
+  'goodie-detail': 'Goodie',
+  'skill-tree': 'Arbre de Competences',
 };
 
 function AppContent() {
@@ -174,6 +180,25 @@ function AppContent() {
         ) : null;
       case 'admin':
         return <AdminPage />;
+      case 'goodies':
+        return (
+          <GoodiesPage
+            onSelectGoodie={(goodieId) => navigate('goodie-detail', { goodieId })}
+          />
+        );
+      case 'goodie-detail':
+        return nav.goodieId ? (
+          <GoodieDetailPage
+            goodieId={nav.goodieId}
+            onBack={() => navigate('goodies')}
+          />
+        ) : null;
+      case 'skill-tree':
+        return (
+          <SkillTreePage
+            onNavigateToPath={(pathId) => navigate('path-detail', { pathId })}
+          />
+        );
       default:
         return (
           <DashboardPage

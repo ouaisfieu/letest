@@ -326,7 +326,96 @@ export type Page =
   | 'settings'
   | 'games'
   | 'game-play'
-  | 'admin';
+  | 'admin'
+  | 'goodies'
+  | 'goodie-detail'
+  | 'skill-tree';
+
+export interface ThemePreset {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string;
+  colors: ThemeColors;
+  is_dark: boolean;
+  is_default: boolean;
+  is_premium: boolean;
+}
+
+export interface ThemeColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  surface: string;
+  text: string;
+}
+
+export interface Goodie {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  difficulty: number;
+  short_description?: string;
+  content: GoodieContent;
+  prerequisites: string[];
+  tags: string[];
+  xp_reward: number;
+  estimated_minutes: number;
+  order_index: number;
+  is_published: boolean;
+}
+
+export interface GoodieContent {
+  intro: string;
+  sections: GoodieSection[];
+  practice?: string;
+  resources?: string[];
+}
+
+export interface GoodieSection {
+  title: string;
+  content: string;
+  type: 'text' | 'list' | 'code' | 'steps' | 'warning';
+}
+
+export interface UserGoodieProgress {
+  id: string;
+  user_id: string;
+  goodie_id: string;
+  status: 'not_started' | 'in_progress' | 'completed' | 'bookmarked';
+  completed_at?: string;
+  notes?: string;
+}
+
+export interface SkillTreeNode {
+  id: string;
+  learning_path_id?: string;
+  parent_node_id?: string;
+  module_id?: string;
+  slug: string;
+  title: string;
+  description?: string;
+  icon: string;
+  node_type: 'root' | 'skill' | 'milestone' | 'mastery';
+  position_x: number;
+  position_y: number;
+  unlock_requirements: Record<string, unknown>;
+  xp_cost: number;
+  rewards: Record<string, unknown>;
+  is_active: boolean;
+  children?: SkillTreeNode[];
+  unlocked?: boolean;
+}
+
+export interface UserSkillNode {
+  id: string;
+  user_id: string;
+  node_id: string;
+  unlocked_at: string;
+  xp_spent: number;
+}
 
 export interface NavigationState {
   page: Page;
@@ -335,6 +424,7 @@ export interface NavigationState {
   lessonId?: string;
   topicId?: string;
   collectionId?: string;
+  goodieId?: string;
 }
 
 export interface GameType {
