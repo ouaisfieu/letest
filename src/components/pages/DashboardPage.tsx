@@ -18,6 +18,8 @@ import { CompetencyRadar } from '../ui/CompetencyRadar';
 import { GamesWidget } from '../dashboard/GamesWidget';
 import { WellnessWidget } from '../wellness/WellnessWidget';
 import { useSessionTracker } from '../../hooks/useSessionTracker';
+import { DashboardSkeleton } from '../ui/Skeleton';
+import { ErrorState } from '../ui/ErrorState';
 
 interface DashboardPageProps {
   onNavigateToPath: (pathId: string) => void;
@@ -32,15 +34,19 @@ export function DashboardPage({ onNavigateToPath, onNavigateToAchievements, onNa
   const [recentAchievements, setRecentAchievements] = useState<(UserAchievement & { achievement: Achievement })[]>([]);
   const [todayProgress, setTodayProgress] = useState<UserDailyProgress | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const sessionTracker = useSessionTracker({
     idleThreshold: 120,
   });
 
-  useEffect(() => {
-    async function loadDashboardData() {
-      if (!profile) return;
+  const loadDashboardData = useCallback(async () => {
+    if (!profile) return;
 
+    setLoading(true);
+    setError(null);
+
+    try {
       const [pathsResult, achievementsResult, progressResult] = await Promise.all([
         supabase.from('learning_paths').select('*').order('order_index'),
         supabase
@@ -57,15 +63,23 @@ export function DashboardPage({ onNavigateToPath, onNavigateToAchievements, onNa
           .maybeSingle(),
       ]);
 
+      if (pathsResult.error) throw pathsResult.error;
+      if (achievementsResult.error) throw achievementsResult.error;
+      if (progressResult.error) throw progressResult.error;
+
       if (pathsResult.data) setPaths(pathsResult.data);
       if (achievementsResult.data) setRecentAchievements(achievementsResult.data as (UserAchievement & { achievement: Achievement })[]);
       if (progressResult.data) setTodayProgress(progressResult.data);
-
+    } catch (err) {
+      setError('Impossible de charger le tableau de bord');
+    } finally {
       setLoading(false);
     }
-
-    loadDashboardData();
   }, [profile]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   const xpForNextLevel = Math.pow((profile?.current_level || 1), 2) * 100;
   const currentLevelXP = profile?.total_xp ? profile.total_xp % xpForNextLevel : 0;
@@ -106,11 +120,11 @@ export function DashboardPage({ onNavigateToPath, onNavigateToAchievements, onNa
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <DashboardSkeleton />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadDashboardData} />;
   }
 
   return (

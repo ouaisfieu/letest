@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Clock,
   Target,
@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { LearningPath, Module } from '../../types';
+import { PathCardSkeleton } from '../ui/Skeleton';
+import { ErrorState } from '../ui/ErrorState';
+import { EmptyState } from '../ui/EmptyState';
 
 interface PathsPageProps {
   onSelectPath: (pathId: string) => void;
@@ -29,22 +32,33 @@ const PATH_ICONS: Record<string, React.ElementType> = {
 export function PathsPage({ onSelectPath }: PathsPageProps) {
   const [paths, setPaths] = useState<(LearningPath & { modules: Module[] })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadPaths() {
-      const { data } = await supabase
+  const loadPaths = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error: queryError } = await supabase
         .from('learning_paths')
         .select('*, modules(*)')
         .order('order_index');
 
+      if (queryError) throw queryError;
+
       if (data) {
         setPaths(data as (LearningPath & { modules: Module[] })[]);
       }
+    } catch (err) {
+      setError('Impossible de charger les parcours');
+    } finally {
       setLoading(false);
     }
-
-    loadPaths();
   }, []);
+
+  useEffect(() => {
+    loadPaths();
+  }, [loadPaths]);
 
   const getDifficultyLabel = (level: number) => {
     switch (level) {
@@ -81,8 +95,32 @@ export function PathsPage({ onSelectPath }: PathsPageProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="p-6" role="status" aria-label="Chargement des parcours">
+        <div className="mb-8">
+          <div className="h-8 w-64 bg-slate-700 rounded animate-pulse mb-2" />
+          <div className="h-4 w-96 bg-slate-700/50 rounded animate-pulse" />
+        </div>
+        <div className="grid gap-6">
+          {[...Array(3)].map((_, i) => (
+            <PathCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadPaths} />;
+  }
+
+  if (paths.length === 0) {
+    return (
+      <div className="p-6">
+        <EmptyState
+          icon={BookOpen}
+          title="Aucun parcours disponible"
+          description="Les parcours d'apprentissage seront bientot disponibles."
+        />
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Lightbulb,
   Search,
@@ -14,6 +14,8 @@ import {
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { Goodie, UserGoodieProgress } from '../../types';
+import { CardSkeleton } from '../ui/Skeleton';
+import { ErrorState } from '../ui/ErrorState';
 
 interface GoodiesPageProps {
   onSelectGoodie: (goodieId: string) => void;
@@ -39,41 +41,52 @@ export function GoodiesPage({ onSelectGoodie }: GoodiesPageProps) {
   const [goodies, setGoodies] = useState<Goodie[]>([]);
   const [progress, setProgress] = useState<Record<string, UserGoodieProgress>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [difficultyFilter, setDifficultyFilter] = useState<number>(0);
 
-  useEffect(() => {
-    loadGoodies();
+  const loadGoodies = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const [goodiesResult, progressResult] = await Promise.all([
+        supabase
+          .from('goodies')
+          .select('*')
+          .eq('is_published', true)
+          .order('order_index'),
+        profile
+          ? supabase
+              .from('user_goodies_progress')
+              .select('*')
+              .eq('user_id', profile.id)
+          : Promise.resolve({ data: null, error: null }),
+      ]);
+
+      if (goodiesResult.error) throw goodiesResult.error;
+
+      if (goodiesResult.data) {
+        setGoodies(goodiesResult.data);
+      }
+      if (progressResult.data) {
+        const progressMap: Record<string, UserGoodieProgress> = {};
+        progressResult.data.forEach((p: UserGoodieProgress) => {
+          progressMap[p.goodie_id] = p;
+        });
+        setProgress(progressMap);
+      }
+    } catch (err) {
+      setError('Impossible de charger les goodies');
+    } finally {
+      setLoading(false);
+    }
   }, [profile]);
 
-  async function loadGoodies() {
-    const [goodiesResult, progressResult] = await Promise.all([
-      supabase
-        .from('goodies')
-        .select('*')
-        .eq('is_published', true)
-        .order('order_index'),
-      profile
-        ? supabase
-            .from('user_goodies_progress')
-            .select('*')
-            .eq('user_id', profile.id)
-        : Promise.resolve({ data: null }),
-    ]);
-
-    if (goodiesResult.data) {
-      setGoodies(goodiesResult.data);
-    }
-    if (progressResult.data) {
-      const progressMap: Record<string, UserGoodieProgress> = {};
-      progressResult.data.forEach((p: UserGoodieProgress) => {
-        progressMap[p.goodie_id] = p;
-      });
-      setProgress(progressMap);
-    }
-    setLoading(false);
-  }
+  useEffect(() => {
+    loadGoodies();
+  }, [loadGoodies]);
 
   const categories = Array.from(new Set(goodies.map((g) => g.category)));
 
@@ -96,17 +109,31 @@ export function GoodiesPage({ onSelectGoodie }: GoodiesPageProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin" />
+      <div className="p-6 space-y-6" role="status" aria-label="Chargement des goodies">
+        <div className="h-40 bg-gradient-to-r from-slate-700 to-slate-600 rounded-2xl animate-pulse" />
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 h-10 bg-slate-800 rounded-xl animate-pulse" />
+          <div className="h-10 w-40 bg-slate-800 rounded-xl animate-pulse" />
+          <div className="h-10 w-32 bg-slate-800 rounded-xl animate-pulse" />
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(9)].map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     );
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadGoodies} />;
   }
 
   return (
     <div className="p-6 space-y-6">
       <div className="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-2xl p-6 text-white">
         <div className="flex items-center gap-3 mb-2">
-          <Sparkles size={28} />
+          <Sparkles size={28} aria-hidden="true" />
           <h1 className="text-2xl font-bold">Les Goodies du Bidouilleur</h1>
         </div>
         <p className="text-teal-100 max-w-2xl">

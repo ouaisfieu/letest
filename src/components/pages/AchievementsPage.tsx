@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Award, Lock, Star, Flame, Users, BookOpen, Trophy } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { Achievement, UserAchievement } from '../../types';
+import { AchievementSkeleton } from '../ui/Skeleton';
+import { ErrorState } from '../ui/ErrorState';
+import { EmptyState } from '../ui/EmptyState';
 
 const CATEGORY_INFO: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   learning: { label: 'Apprentissage', icon: BookOpen, color: 'emerald' },
@@ -25,23 +28,35 @@ export function AchievementsPage() {
   const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadAchievements() {
-      if (!profile) return;
+  const loadAchievements = useCallback(async () => {
+    if (!profile) return;
 
+    setLoading(true);
+    setError(null);
+
+    try {
       const [achievementsResult, userResult] = await Promise.all([
         supabase.from('achievements').select('*').order('rarity'),
         supabase.from('user_achievements').select('*').eq('user_id', profile.id),
       ]);
 
+      if (achievementsResult.error) throw achievementsResult.error;
+      if (userResult.error) throw userResult.error;
+
       if (achievementsResult.data) setAchievements(achievementsResult.data as Achievement[]);
       if (userResult.data) setUserAchievements(userResult.data as UserAchievement[]);
+    } catch (err) {
+      setError('Impossible de charger les badges');
+    } finally {
       setLoading(false);
     }
-
-    loadAchievements();
   }, [profile]);
+
+  useEffect(() => {
+    loadAchievements();
+  }, [loadAchievements]);
 
   const earnedIds = new Set(userAchievements.map((ua) => ua.achievement_id));
   const earnedCount = userAchievements.length;
@@ -84,8 +99,38 @@ export function AchievementsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="p-6" role="status" aria-label="Chargement des badges">
+        <div className="mb-8">
+          <div className="h-8 w-72 bg-slate-700 rounded animate-pulse mb-2" />
+          <div className="h-4 w-96 bg-slate-700/50 rounded animate-pulse" />
+        </div>
+        <div className="h-36 bg-gradient-to-r from-slate-700 to-slate-600 rounded-2xl animate-pulse mb-8" />
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-10 w-28 bg-slate-700 rounded-lg animate-pulse flex-shrink-0" />
+          ))}
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(9)].map((_, i) => (
+            <AchievementSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadAchievements} />;
+  }
+
+  if (achievements.length === 0) {
+    return (
+      <div className="p-6">
+        <EmptyState
+          icon={Award}
+          title="Aucun badge disponible"
+          description="Les badges seront bientot disponibles."
+        />
       </div>
     );
   }

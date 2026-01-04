@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   MessageSquare,
   Users,
@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { DiscussionTopic, UserProfile } from '../../types';
+import { TopicSkeleton } from '../ui/Skeleton';
+import { ErrorState } from '../ui/ErrorState';
 
 interface CommunityPageProps {
   onSelectTopic: (topicId: string) => void;
@@ -20,25 +22,36 @@ interface CommunityPageProps {
 export function CommunityPage({ onSelectTopic }: CommunityPageProps) {
   const [topics, setTopics] = useState<(DiscussionTopic & { author: UserProfile | null })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadTopics() {
-      const { data } = await supabase
+  const loadTopics = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error: queryError } = await supabase
         .from('discussion_topics')
         .select('*, author:user_profiles(*)')
         .order('is_pinned', { ascending: false })
         .order('last_activity_at', { ascending: false });
 
+      if (queryError) throw queryError;
+
       if (data) {
         setTopics(data as (DiscussionTopic & { author: UserProfile | null })[]);
       }
+    } catch (err) {
+      setError('Impossible de charger les discussions');
+    } finally {
       setLoading(false);
     }
-
-    loadTopics();
   }, []);
+
+  useEffect(() => {
+    loadTopics();
+  }, [loadTopics]);
 
   const allTags = [...new Set(topics.flatMap((t) => t.tags))];
 
@@ -68,10 +81,34 @@ export function CommunityPage({ onSelectTopic }: CommunityPageProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="p-6" role="status" aria-label="Chargement des discussions">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <div className="h-8 w-40 bg-slate-700 rounded animate-pulse mb-2" />
+            <div className="h-4 w-64 bg-slate-700/50 rounded animate-pulse" />
+          </div>
+          <div className="h-10 w-44 bg-slate-700 rounded-lg animate-pulse" />
+        </div>
+        <div className="grid lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3 space-y-4">
+            <div className="h-10 bg-slate-800 rounded-lg animate-pulse" />
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <TopicSkeleton key={i} />
+              ))}
+            </div>
+          </div>
+          <div className="space-y-6">
+            <div className="h-40 bg-slate-800 rounded-xl animate-pulse" />
+            <div className="h-48 bg-slate-800 rounded-xl animate-pulse" />
+          </div>
+        </div>
       </div>
     );
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadTopics} />;
   }
 
   return (
@@ -82,7 +119,7 @@ export function CommunityPage({ onSelectTopic }: CommunityPageProps) {
           <p className="text-slate-400">Echangez avec d'autres acteurs associatifs</p>
         </div>
         <button className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2.5 rounded-lg font-medium transition-all">
-          <Plus size={18} />
+          <Plus size={18} aria-hidden="true" />
           Nouvelle discussion
         </button>
       </div>
@@ -91,7 +128,7 @@ export function CommunityPage({ onSelectTopic }: CommunityPageProps) {
         <div className="lg:col-span-3 space-y-4">
           <div className="flex gap-3">
             <div className="flex-1 relative">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
               <input
                 type="text"
                 value={searchQuery}

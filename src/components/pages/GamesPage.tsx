@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Layers,
   CheckSquare,
@@ -10,10 +10,14 @@ import {
   Play,
   Trophy,
   Target,
+  Gamepad2,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { GameCollection, GameType } from '../../types';
+import { GameCardSkeleton, StatCardSkeleton } from '../ui/Skeleton';
+import { ErrorState } from '../ui/ErrorState';
+import { EmptyState } from '../ui/EmptyState';
 
 interface GamesPageProps {
   onSelectCollection: (collectionId: string) => void;
@@ -60,13 +64,20 @@ export function GamesPage({ onSelectCollection }: GamesPageProps) {
     bestStreak: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadData() {
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
       const [typesResult, collectionsResult] = await Promise.all([
         supabase.from('game_types').select('*').eq('is_active', true),
         supabase.from('game_collections').select('*, game_types(*)').eq('is_published', true).order('order_index'),
       ]);
+
+      if (typesResult.error) throw typesResult.error;
+      if (collectionsResult.error) throw collectionsResult.error;
 
       if (typesResult.data) setGameTypes(typesResult.data as GameType[]);
       if (collectionsResult.data) {
@@ -91,12 +102,16 @@ export function GamesPage({ onSelectCollection }: GamesPageProps) {
           });
         }
       }
-
+    } catch (err) {
+      setError('Impossible de charger les jeux');
+    } finally {
       setLoading(false);
     }
-
-    loadData();
   }, [profile]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const filteredCollections = selectedType
     ? collections.filter((c) => c.game_type?.slug === selectedType)
@@ -121,8 +136,37 @@ export function GamesPage({ onSelectCollection }: GamesPageProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="p-6" role="status" aria-label="Chargement des jeux">
+        <div className="mb-8">
+          <div className="h-8 w-48 bg-slate-700 rounded animate-pulse mb-2" />
+          <div className="h-4 w-80 bg-slate-700/50 rounded animate-pulse" />
+        </div>
+        <div className="grid sm:grid-cols-3 gap-4 mb-8">
+          {[...Array(3)].map((_, i) => (
+            <StatCardSkeleton key={i} />
+          ))}
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <GameCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadData} />;
+  }
+
+  if (collections.length === 0) {
+    return (
+      <div className="p-6">
+        <EmptyState
+          icon={Gamepad2}
+          title="Aucun jeu disponible"
+          description="Les jeux educatifs seront bientot disponibles."
+        />
       </div>
     );
   }

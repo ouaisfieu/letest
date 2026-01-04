@@ -51,6 +51,8 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
       className={`fixed left-0 top-0 h-full bg-slate-800 border-r border-slate-700 transition-all duration-300 z-50 ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
+      role="navigation"
+      aria-label="Menu principal"
     >
       <div className="flex flex-col h-full">
         <div className="p-4 border-b border-slate-700">
@@ -69,8 +71,10 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
             <button
               onClick={onToggleCollapse}
               className="p-2 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+              aria-label={isCollapsed ? 'Agrandir le menu' : 'Reduire le menu'}
+              aria-expanded={!isCollapsed}
             >
-              {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+              {isCollapsed ? <ChevronRight size={20} aria-hidden="true" /> : <ChevronLeft size={20} aria-hidden="true" />}
             </button>
           </div>
         </div>
@@ -113,7 +117,7 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
           </div>
         )}
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Navigation principale">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.page;
@@ -126,9 +130,10 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                     : 'text-slate-400 hover:bg-slate-700 hover:text-white'
                 } ${isCollapsed ? 'justify-center' : ''}`}
-                title={isCollapsed ? item.label : undefined}
+                aria-label={isCollapsed ? item.label : undefined}
+                aria-current={isActive ? 'page' : undefined}
               >
-                <Icon size={20} />
+                <Icon size={20} aria-hidden="true" />
                 {!isCollapsed && <span className="font-medium">{item.label}</span>}
               </button>
             );
@@ -141,9 +146,9 @@ export function Sidebar({ currentPage, onNavigate, isCollapsed, onToggleCollapse
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all ${
               isCollapsed ? 'justify-center' : ''
             }`}
-            title={isCollapsed ? 'Deconnexion' : undefined}
+            aria-label={isCollapsed ? 'Deconnexion' : undefined}
           >
-            <LogOut size={20} />
+            <LogOut size={20} aria-hidden="true" />
             {!isCollapsed && <span className="font-medium">Deconnexion</span>}
           </button>
         </div>
