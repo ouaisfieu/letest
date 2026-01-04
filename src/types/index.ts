@@ -16,6 +16,19 @@ export interface UserProfile {
   email_notifications: boolean;
   created_at: string;
   updated_at: string;
+  theme_preset_id?: string;
+  custom_colors?: ThemeColors;
+  avatar_url?: string;
+  banner_url?: string;
+  portfolio_bio?: string;
+  portfolio_links?: PortfolioLink[];
+  is_portfolio_public?: boolean;
+}
+
+export interface PortfolioLink {
+  label: string;
+  url: string;
+  icon?: string;
 }
 
 export interface AvatarConfig {
